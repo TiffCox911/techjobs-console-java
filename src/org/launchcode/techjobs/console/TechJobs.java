@@ -3,6 +3,7 @@ package org.launchcode.techjobs.console;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.Map;
 
 /**
  * Created by LaunchCode
@@ -42,6 +43,7 @@ public class TechJobs {
                 } else {
 
                     ArrayList<String> results = JobData.findAll(columnChoice);
+                    alphaOrder(results);
 
                     System.out.println("\n*** All " + columnChoices.get(columnChoice) + " Values ***");
 
@@ -53,19 +55,36 @@ public class TechJobs {
 
             } else { // choice is "search"
 
-                // How does the user want to search (e.g. by skill or employer)
+                // Search by Employers or Skill
                 String searchField = getUserSelection("Search by:", columnChoices);
 
-                // What is their search term?
                 System.out.println("\nSearch term: ");
                 String searchTerm = in.nextLine();
 
                 if (searchField.equals("all")) {
-                    System.out.println("Search all fields not yet implemented.");
+                    printJobs(JobData.findByValue(searchTerm));
                 } else {
                     printJobs(JobData.findByColumnAndValue(searchField, searchTerm));
                 }
             }
+        }
+    }
+
+    private static void alphaOrder(ArrayList<String> strList) {
+        boolean flag = false;
+
+        while (!flag) {
+            flag = true;
+            for (int i = 0; i < strList.size() -1; i++) {
+                int compare= strList.get(i).compareToIgnoreCase(strList.get(i + 1));
+                if (compare > 0) {
+                    flag = false;
+                    String holder = strList.get(i);
+                    strList.set(i, strList.get(i + 1));
+                    strList.set(i + 1, holder);
+                }
+            }
+
         }
     }
 
@@ -93,7 +112,11 @@ public class TechJobs {
                 System.out.println("" + j + " - " + choices.get(choiceKeys[j]));
             }
 
-            choiceIdx = in.nextInt();
+            try {
+                choiceIdx = in.nextInt();
+            } catch (Exception ignore) {
+                choiceIdx = -1;
+            }
             in.nextLine();
 
             // Validate user's input
@@ -110,7 +133,17 @@ public class TechJobs {
 
     // Print a list of jobs
     private static void printJobs(ArrayList<HashMap<String, String>> someJobs) {
-
-        System.out.println("printJobs is not implemented yet");
+        if (someJobs.size() == 0) {
+            System.out.println("No jobs found.");
+            return;
+        }
+        for (HashMap<String, String> job : someJobs) {
+            System.out.println("*****");
+            ArrayList<Map.Entry<String, String>> theList = new ArrayList(job.entrySet());
+            for (Map.Entry<String, String> elem : theList) {
+                System.out.println(elem.getKey() + ": " + elem.getValue());
+            }
+        }
+        System.out.println("*****");
     }
 }

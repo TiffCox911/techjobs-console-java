@@ -10,6 +10,8 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Created by LaunchCode
@@ -50,8 +52,11 @@ public class JobData {
 
         // load data, if not already loaded
         loadData();
-
-        return allJobs;
+        ArrayList<HashMap<String, String>> allJobsCopy = new ArrayList<>();
+        for (HashMap<String, String> row : allJobs) {
+            allJobsCopy.add(hashCopy(row));
+        }
+        return completeSort(allJobsCopy);
     }
 
     /**
@@ -76,12 +81,68 @@ public class JobData {
 
             String aValue = row.get(column);
 
-            if (aValue.contains(value)) {
+            if (aValue.toLowerCase().contains(value.toLowerCase())) {
                 jobs.add(row);
             }
         }
 
+        jobs = completeSort(jobs);
+        jobs = sortByKey(jobs, column);
+
         return jobs;
+    }
+
+    public static ArrayList<HashMap<String, String>> findByValue(String value) {
+        // load data, if not already loaded
+        loadData();
+        ArrayList<HashMap<String, String>> jobs = new ArrayList<>();
+        for (HashMap<String, String> row : allJobs) {
+            ArrayList<String> rowEntry = new ArrayList<>(row.keySet());
+            for (String column : rowEntry) {
+                String aValue = row.get(column);
+                if (aValue.toLowerCase().contains(value.toLowerCase()) && !jobs.contains(row)) {
+                    jobs.add(row);
+                }
+            }
+        }
+        return completeSort(jobs);
+    }
+
+    private static ArrayList<HashMap<String, String>> completeSort(ArrayList<HashMap<String, String>> jobs) {
+        jobs = sortByKey(jobs, "name");
+        jobs = sortByKey(jobs, "position type");
+        jobs = sortByKey(jobs, "core competency");
+        jobs = sortByKey(jobs, "employer");
+        jobs = sortByKey(jobs, "location");
+        return jobs;
+    }
+
+    private static ArrayList<HashMap<String, String>> sortByKey(ArrayList<HashMap<String, String>> jobs, String key) {
+        boolean flag= false;
+
+        do {
+            flag = true;
+            for (int i = 0; i < jobs.size() -1; i++) {
+                int check = jobs.get(i).get(key).compareToIgnoreCase(jobs.get(i + 1).get(key));
+                if (check > 0) {
+                    flag = false;
+                    HashMap<String, String> holder = hashCopy(jobs.get(i));
+                    jobs.set(i, jobs.get(i + 1));
+                    jobs.set(i + 1, holder);
+                }
+            }
+
+        } while (!flag);
+        return jobs;
+    }
+
+    private static HashMap<String, String> hashCopy(HashMap<String, String> mapToCopy) {
+        HashMap<String, String> copy = new HashMap<>();
+        ArrayList<Map.Entry<String, String>> theList = new ArrayList(mapToCopy.entrySet());
+        for (Map.Entry<String, String> elem : theList) {
+            copy.put(elem.getKey(), elem.getValue());
+        }
+        return copy;
     }
 
     /**
@@ -126,3 +187,6 @@ public class JobData {
     }
 
 }
+
+
+
